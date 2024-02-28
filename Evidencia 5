@@ -1,0 +1,72 @@
+#define PIN_LED_R D0 // Pin del LED rojo
+#define PIN_LED_G D1 // Pin del LED verde
+#define PIN_LED_B D2 // Pin del LED azul
+#define PIN_BTN_STOP D3 // Pin del botón de paro
+#define PIN_BTN_MAINTENANCE D4 // Pin del botón de mantenimiento
+
+#define INTERVAL_RED 5*pote // Intervalo de tiempo para el LED rojo en milisegundos
+#define INTERVAL_YELLOW 1*pote // Intervalo de tiempo para el LED amarillo en milisegundos
+#define INTERVAL_GREEN 3*pote // Intervalo de tiempo para el LED verde en milisegundos
+#define INTERVAL_MAINTENANCE 500 // Intervalo de tiempo para el LED amarillo en modo mantenimiento en milisegundos
+
+bool stopFlag = false; // Bandera para detener la secuencia
+bool maintenanceFlag = false; // Bandera para indicar modo mantenimiento
+int pote;
+void setup() {
+  pinMode(PIN_LED_R, OUTPUT);
+  pinMode(PIN_LED_G, OUTPUT);
+  pinMode(PIN_LED_B, OUTPUT);
+  pinMode(PIN_BTN_STOP, INPUT_PULLUP);
+  pinMode(PIN_BTN_MAINTENANCE, INPUT_PULLUP);
+  pinMode(A0,INPUT);
+}
+
+void loop() {
+  pote=analogRead(A0);
+  Serial.println(pote);
+  if (digitalRead(PIN_BTN_STOP) == LOW) {
+    stopFlag = true;
+    while (digitalRead(PIN_BTN_STOP) == LOW); // Espera a que se libere el botón de paro
+  }
+  
+  if (digitalRead(PIN_BTN_MAINTENANCE) == LOW) {
+    maintenanceFlag = true;
+    stopFlag = false; // Reinicia la bandera de parada
+    while (digitalRead(PIN_BTN_MAINTENANCE) == LOW); // Espera a que se libere el botón de mantenimiento
+  }
+  
+  if (!stopFlag) {
+    if (!maintenanceFlag) {
+      // Secuencia normal
+      digitalWrite(PIN_LED_R, HIGH);
+      delay(INTERVAL_RED);
+      digitalWrite(PIN_LED_R, LOW);
+      
+      digitalWrite(PIN_LED_R, HIGH);
+      digitalWrite(PIN_LED_G, HIGH);
+      delay(INTERVAL_YELLOW);
+      digitalWrite(PIN_LED_R, LOW);
+      digitalWrite(PIN_LED_G, LOW);
+      
+      digitalWrite(PIN_LED_G, HIGH);
+      delay(INTERVAL_GREEN);
+      digitalWrite(PIN_LED_G, LOW);
+      
+      digitalWrite(PIN_LED_G, HIGH);
+      digitalWrite(PIN_LED_R, HIGH);
+      delay(INTERVAL_YELLOW);
+      digitalWrite(PIN_LED_G, LOW);
+      digitalWrite(PIN_LED_R, LOW);
+    } else {
+      // Modo mantenimiento
+      digitalWrite(PIN_LED_R, HIGH);
+      digitalWrite(PIN_LED_G, HIGH);
+      digitalWrite(PIN_LED_B, HIGH);
+      delay(INTERVAL_MAINTENANCE);
+      digitalWrite(PIN_LED_R, LOW);
+      digitalWrite(PIN_LED_G, LOW);
+      digitalWrite(PIN_LED_B, LOW);
+      delay(INTERVAL_MAINTENANCE);
+    }
+  }
+}
