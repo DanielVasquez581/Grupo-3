@@ -1,0 +1,59 @@
+#include <Arduino.h>
+
+// Definición de pines
+#define IN_BUTTON D1
+#define OUT_BUTTON D2
+#define GREEN_LED D3
+#define RED_LED D4
+
+// Variables para el control del parqueadero
+int cuposDisponibles = 5; // Número inicial de cupos disponibles
+long int costo_recaudado = 0; // Variable para almacenar el valor recaudado
+int costo= 5000;
+void setup() {
+  // Inicialización de pines
+  pinMode(IN_BUTTON, INPUT_PULLUP);
+  pinMode(OUT_BUTTON, INPUT_PULLUP);
+  pinMode(GREEN_LED, OUTPUT);
+  pinMode(RED_LED, OUTPUT);
+
+  // Inicialización del puerto serie
+  Serial.begin(9600);
+}
+
+void loop() {
+  // Verificar si hay cupos disponibles
+  if (cuposDisponibles > 0) {
+    digitalWrite(GREEN_LED, HIGH); // Mostrar LED verde si hay cupos disponibles
+    digitalWrite(RED_LED, LOW);
+  } else {
+    digitalWrite(GREEN_LED, LOW);
+    digitalWrite(RED_LED, HIGH); // Mostrar LED rojo si el parqueadero está lleno
+  }
+
+  // Verificar botón de ingreso
+  if (!digitalRead(IN_BUTTON)) {
+    if (cuposDisponibles > 0) {
+      cuposDisponibles--; // Reducir el número de cupos disponibles
+      Serial.println("Vehículo ingresado al parqueadero.");
+    } else {
+      Serial.println("Parqueadero lleno. No se permite el ingreso.");
+    }
+    delay(1000); // Debounce
+  }
+
+  // Verificar botón de egreso
+  if (!digitalRead(OUT_BUTTON)) {
+    if (cuposDisponibles < 5) {
+      cuposDisponibles=cuposDisponibles+1; // Incrementar el número de cupos disponibles
+      costo_recaudado=costo_recaudado+5000 ; // Incrementar el valor recaudado
+      Serial.println("cupos: ");
+      Serial.println(cuposDisponibles);
+      Serial.println("recaudo");
+    Serial.println(costo_recaudado);
+    } else {
+      Serial.println("Parqueadero vacío. No hay vehículos para salir.");
+    }
+    delay(1000); // Debounce
+  }
+}
